@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.db.sys.dao.SysMenuDao">
+
+	<!-- 添加菜单记录 -->
+	<!-- Integer insertSysMenu(SysMenuDO sysMenuDO) -->
+	<insert id="insertSysMenu">
+		insert into sys_menus(
+			name, url, type,
+			sort, note, parentId,
+			permission, createdTime, modifiedTime,
+			createdUser, modifiedUser
+		)values(
+			#{name}, #{url}, #{type},
+			#{sort}, #{note}, #{parentId},
+			#{permission}, now(), now(),
+			#{createdUser}, #{modifiedUser}
+		)
+	</insert>
+	
+	<!-- Integer deleteSysMenu(Integer id) -->
+	<delete id="deleteById">
+		delete from
+			sys_menus
+		where
+			id=#{id}
+	</delete>
+	
+	<!-- Integer countByParentId(Integer parentId) -->
+	<select id="countByParentId" resultType="java.lang.Integer">
+		select
+			count(*)
+		from
+			sys_menus
+		where
+			parentId=#{parentId}
+		for update
+	</select>
+
+	<!-- 查询所有菜单记录及父菜单名称 -->
+	<!-- List<SysMenuDO> selectAll() -->
+	<select id="selectAll"
+		resultType="com.company.db.sys.pojo.SysMenuDO">
+		select
+			t1.*, t2.name as parentName
+		from
+			sys_menus t1 
+		left join 
+			sys_menus t2
+		on
+			t1.parentId=t2.id
+	</select>
+
+	<!-- 基于菜单id查询菜单记录 -->
+	<!-- SysMenuDO getSysMenu(Integer id) -->
+	<select id="getSysMenu"
+		resultType="com.company.db.sys.pojo.SysMenuDO">
+		select
+			*
+		from
+			sys_menus
+		where
+			id=#{id}
+		for update
+	</select>
+
+	<!-- 查询所有菜单的id,name和parentId -->
+	<!-- List<MenuNodeVO> listMenuNode() -->
+	<select id="listMenuNode"
+		resultType="com.company.db.sys.pojo.MenuNodeVO">
+		select
+			id, name, parentId
+		from
+			sys_menus
+	</select>
+
+	<!-- 基于id查询菜单记录及父菜单名称 -->
+	<!-- SysMenuDO getSysMenuById(Integer id) -->
+	<select id="getSysMenuById" resultType="com.company.db.sys.pojo.SysMenuDO">
+		select
+			t1.*, t2.name as parentName
+		from
+			sys_menus t1  
+		left join 
+			sys_menus t2
+		on
+			t1.parentId=t2.id
+		where
+			t1.id=#{id}
+	</select>
+
+	<!-- 基于id更新菜单记录 -->
+	<!-- Integer updateSysMenu(SysMenuDO sysMenuDO) -->
+	<update id="updateSysMenu">
+		update
+			sys_menus
+		set
+			name=#{name}, url=#{url},
+			type=#{type}, sort=#{sort},
+			note=#{note}, parentId=#{parentId},
+			permission=#{permission}, modifiedTime=now(),
+			modifiedUser=#{modifiedUser}
+		where
+			id=#{id}
+	</update>
+
+
+<!-- 基于菜单id查询对应记录的条数 -->
+<!-- Integer getMenuCount(@Param("menuIds")Integer[] menuIds) -->
+<select id="getMenuCount" resultType="java.lang.Integer">
+    select 
+        count(*) 
+    from 
+        sys_menus 
+    where
+        id in 
+        <foreach collection="menuIds" 
+            open="(" close=")" 
+            separator="," item="menuId">
+            #{menuId}
+        </foreach>
+    for update
+</select>
+
+
+	<!-- ========================== 对RoleMenu表的操作 ============================= -->
+
+	<!-- Integer countRoleMenuByMenuId(Integer menuId) -->
+	<select id="countRoleMenuByMenuId" resultType="java.lang.Integer">
+		select
+			count(*)
+		from
+			sys_role_menus
+		where
+			menu_id=#{menuId}
+	</select>
+
+	<!-- Integer deleteRoleMenuByMenuId(Integer menuId) -->
+	<delete id="deleteRoleMenuByMenuId">
+		delete from
+			sys_role_menus
+		where
+			menu_id=#{menuId}
+	</delete>
+	
+	<!-- 基于菜单id查询权限信息 -->
+<!-- List<String> listPermissions(
+    @Param("menuIds")Integer[] menuIds) -->
+<select id="listPermissions" resultType="java.lang.String">
+    select 
+        permission
+    from 
+        sys_menus 
+    where 
+        id 
+    in 
+    <foreach collection="menuIds"
+        open="(" close=")" 
+        separator="," item="menuId">
+        #{menuId}
+    </foreach>
+</select>
+</mapper>

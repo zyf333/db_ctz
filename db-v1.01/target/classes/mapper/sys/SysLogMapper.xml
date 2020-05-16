@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.company.db.sys.dao.SysLogDao">
+
+	<!-- Integer insert(SysLogDO sysLogDO) -->
+	<insert id="insert">
+		insert into sys_logs(
+			username, operation, method, 
+			params, time, ip,
+			createdTime
+		)values(
+			#{username}, #{operation}, #{method}, 
+			#{params}, #{time}, #{ip},
+			now()
+		)
+	</insert>
+
+	<!-- Integer deleteByIds(@Param("ids") Integer... ids); -->
+	<delete id="deleteByIds">
+		delete from
+			sys_logs
+		where
+			id in
+			<foreach collection="ids" item="id" open="(" separator="," close=")">
+				#{id}
+			</foreach>
+	</delete>
+
+
+	<sql id="queryWhereId">
+		<where>
+			<if test="username!=null and username!=''">
+				username like concat('%',#{username},'%')
+			</if>
+		</where>
+	</sql>
+
+	<!-- Integer countByUsername(@Param("username")String username) -->
+	<select id="countByUsername" resultType="java.lang.Integer">
+		select
+			count(*)
+		from
+			sys_logs
+		<include refid="queryWhereId" />
+	</select>
+
+	<!-- List<SysLogDO> selectByUsernameLimit( 
+				@Param("username")String username, 
+				@Param("recordIndex")Integer recordIndex, 
+				@Param("pageSize")Integer pageSize) -->
+	<select id="selectByUsernameLimit"
+		resultType="com.company.db.sys.pojo.SysLogDO">
+		select
+			id, username, operation,
+			method, params, time,
+			ip, createdTime
+		from
+			sys_logs
+		<include refid="queryWhereId" />
+		order by
+			createdTime desc
+		limit
+			#{recordIndex}, #{pageSize}
+	</select>
+	
+</mapper>
